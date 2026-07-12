@@ -77,6 +77,28 @@
     padding:5px 12px;border-radius:8px;
   }
   .week-hero h1{margin-top:0;}
+
+  header{position:relative;}
+  .menu-dots{
+    position:absolute;top:24px;right:20px;
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    width:34px;height:34px;font-size:18px;color:var(--text-dim);cursor:pointer;
+    line-height:1;z-index:10;
+  }
+  .menu-dots:hover{color:var(--text);border-color:var(--c-sat);}
+  .menu-panel{
+    display:none;position:absolute;top:64px;right:20px;z-index:20;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:6px;min-width:210px;box-shadow:0 12px 30px rgba(0,0,0,0.4);
+    flex-direction:column;gap:2px;
+  }
+  .menu-panel.show{display:flex;}
+  .menu-panel button{
+    background:none;border:none;color:var(--text-dim);text-align:left;
+    font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:600;
+    padding:10px 12px;border-radius:8px;cursor:pointer;
+  }
+  .menu-panel button:hover{background:var(--surface-2);color:var(--text);}
   .week-tag{
     display:inline-flex;align-items:center;gap:6px;margin-top:12px;
     font-size:11px;color:var(--text-faint);letter-spacing:0.08em;font-weight:600;
@@ -214,11 +236,14 @@
   .info-panel ul{list-style:none;}
   .info-panel li{font-size:13px;color:var(--text-dim);padding:5px 0 5px 16px;position:relative;line-height:1.5;}
   .info-panel li::before{content:"—";position:absolute;left:0;color:var(--text-faint);}
-  .reset-row{text-align:center;margin-top:14px;}
-  .reset-row button{background:none;border:none;color:var(--text-faint);font-size:11px;letter-spacing:0.08em;
-    text-transform:uppercase;cursor:pointer;font-family:'Manrope',sans-serif;font-weight:600;text-decoration:underline;}
-  .reset-row button:hover{color:#ff6a3d;}
-  .reset-sep{color:var(--text-faint);margin:0 8px;font-size:11px;}
+  .next-week-btn{
+    font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;font-weight:700;
+    margin-top:16px;padding:12px 26px;border-radius:10px;border:none;cursor:pointer;
+    background:linear-gradient(90deg,var(--c-sat),var(--c-sun));color:#0c0e13;
+    position:relative;z-index:1;transition:transform .15s ease;
+  }
+  .next-week-btn:hover{transform:scale(1.03);}
+  .next-week-btn:active{transform:scale(0.97);}
 
   @media (min-width:640px){.day-grid{grid-template-columns:1fr 1fr;}}
 </style>
@@ -228,14 +253,20 @@
 <div id="loading"><div class="spin"></div><p>Loading your week…</p></div>
 
 <header>
+  <button class="menu-dots" onclick="toggleMenu(event)">⋮</button>
+  <div class="menu-panel" id="menuPanel">
+    <button onclick="closeMenuThen(manualReset)">Reset this week's progress</button>
+    <button onclick="closeMenuThen(confirmRestart)">↻ Start new week (Week 1)</button>
+  </div>
+
   <div class="eyebrow">Six Day Split</div>
   <div class="week-hero">
     <div class="week-hero-num" id="weekHeroNum">WEEK 1</div>
     <h1 class="display">Training Log</h1>
   </div>
-  <div class="subhead">Pick today's session. Tap into an exercise, log your sets, mark it done.</div>
+  <div class="subhead" id="subhead">Pick today's session. Tap into an exercise, log your sets, mark it done.</div>
   <div class="quote-strip" id="quoteStrip"></div>
-  <div class="week-tag">This week resets <b id="weekResetLabel">Saturday</b></div>
+  <div class="week-tag" id="weekTag">This week resets <b id="weekResetLabel">Saturday</b></div>
   <div class="week-strip" id="weekStrip"></div>
 </header>
 
@@ -243,12 +274,13 @@
   <div class="week-complete-banner" id="weekCompleteBanner">
     <div class="wcb-title" id="wcbTitle"></div>
     <div class="wcb-sub" id="wcbSub"></div>
+    <button class="next-week-btn" onclick="nextWeek()">Next Week →</button>
   </div>
 
   <div id="view-home">
     <div class="day-grid" id="dayGrid"></div>
 
-    <div class="info-toggle"><button onclick="toggleInfo()">Progression &amp; Nutrition Rules ▾</button></div>
+    <div class="info-toggle" id="infoToggleRow"><button onclick="toggleInfo()">Progression &amp; Nutrition Rules ▾</button></div>
     <div class="info-panel" id="infoPanel">
       <h3>Progression Rules</h3>
       <ul>
@@ -266,11 +298,6 @@
         <li>Calorie surplus: +250 to +350 kcal / day</li>
         <li>Sleep: 7.5–9 hours every night</li>
       </ul>
-    </div>
-    <div class="reset-row">
-      <button onclick="manualReset()">Reset this week's progress</button>
-      <span class="reset-sep">·</span>
-      <button onclick="restartProgram()">Restart program from Week 1</button>
     </div>
   </div>
 
@@ -434,6 +461,10 @@ const WEEK_CELEBRATIONS = [
   ['🏆 6 for 6, Faihars!', 'Whole split done. Onwards to next week.'],
   ['🔥 Week in the bank, Faihars!', 'Every session and every rest day logged.'],
   ['💥 Animal week, Faihars!', 'You didn\'t miss a single day.'],
+  ['⚡ Locked in, Faihars!', 'Another full week, no shortcuts taken.'],
+  ['🚀 That\'s how it\'s done, Faihars!', 'Six days, zero excuses.'],
+  ['🥇 Champion week, Faihars!', 'This is what consistency looks like.'],
+  ['💪 Relentless, Faihars!', 'Every day showed up. Every day delivered.'],
 ];
 
 const MOTIVATION_QUOTES = [
@@ -461,7 +492,6 @@ PROGRAM.forEach(day=>{
 
 let currentDayId = null;
 let bannerShownFor = {};      // dayId -> celebration, per-day completion message
-let weekBannerMsg = null;     // whole-week celebration message, chosen once per completed week
 let programStartWeekId = null; // weekId of the week program was started / last restarted
 
 /* ================= WEEK LOGIC ================= */
@@ -478,6 +508,12 @@ function weekNumberFor(startId, curId){
   const msPerWeek = 7*24*60*60*1000;
   const diff = Math.round((new Date(curId) - new Date(startId)) / msPerWeek);
   return Math.max(1, diff + 1);
+}
+
+function weekIdShift(id, days){
+  const d = new Date(id);
+  d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
 }
 
 function isWeekFullyComplete(){
@@ -547,9 +583,13 @@ async function manualReset(){
     });
   });
   bannerShownFor = {};
-  weekBannerMsg = null;
   await persist();
   renderHome();
+}
+
+function confirmRestart(){
+  const ok = confirm('Start a new week? This resets the week counter to Week 1 and clears all logged progress.');
+  if(ok) restartProgram();
 }
 
 async function restartProgram(){
@@ -561,10 +601,39 @@ async function restartProgram(){
     });
   });
   bannerShownFor = {};
-  weekBannerMsg = null;
   await persist();
   renderHome();
 }
+
+async function nextWeek(){
+  // pretend the program started one week earlier, so the week counter advances by 1
+  // immediately, regardless of the real calendar date
+  programStartWeekId = weekIdShift(programStartWeekId, -7);
+  PROGRAM.forEach(d=>{
+    d.state.forEach(s=>{
+      s.done=false; s.open=false;
+      if('loggedSets' in s) s.loggedSets=0;
+    });
+  });
+  bannerShownFor = {};
+  await persist();
+  renderHome();
+}
+
+function toggleMenu(evt){
+  evt.stopPropagation();
+  document.getElementById('menuPanel').classList.toggle('show');
+}
+function closeMenuThen(fn){
+  document.getElementById('menuPanel').classList.remove('show');
+  fn();
+}
+document.addEventListener('click', (e)=>{
+  const panel = document.getElementById('menuPanel');
+  if(panel && panel.classList.contains('show') && !panel.contains(e.target)){
+    panel.classList.remove('show');
+  }
+});
 
 /* ================= RENDER: WEEK STRIP ================= */
 function renderWeekStrip(){
@@ -592,12 +661,22 @@ function renderHome(){
   document.getElementById('weekHeroNum').textContent = `WEEK ${weekNum}`;
 
   const banner = document.getElementById('weekCompleteBanner');
-  if(isWeekFullyComplete()){
-    if(!weekBannerMsg){
-      weekBannerMsg = WEEK_CELEBRATIONS[Math.floor(Math.random()*WEEK_CELEBRATIONS.length)];
-    }
-    document.getElementById('wcbTitle').textContent = weekBannerMsg[0];
-    document.getElementById('wcbSub').textContent = weekBannerMsg[1] + ' Hit "Restart program" below whenever you want to start Week ' + (weekNum+1) + ' fresh — or it resets automatically next Saturday.';
+  const complete = isWeekFullyComplete();
+
+  // when the week is fully complete: hide everything else, show only the motivation card
+  document.getElementById('dayGrid').style.display = complete ? 'none' : '';
+  document.getElementById('infoToggleRow').style.display = complete ? 'none' : '';
+  document.getElementById('infoPanel').classList.remove('show');
+  document.getElementById('infoPanel').style.display = complete ? 'none' : '';
+  document.getElementById('subhead').style.display = complete ? 'none' : '';
+  document.getElementById('quoteStrip').style.display = complete ? 'none' : '';
+  document.getElementById('weekTag').style.display = complete ? 'none' : '';
+  document.getElementById('weekStrip').style.display = complete ? 'none' : '';
+
+  if(complete){
+    const msg = WEEK_CELEBRATIONS[(weekNum-1) % WEEK_CELEBRATIONS.length];
+    document.getElementById('wcbTitle').textContent = msg[0];
+    document.getElementById('wcbSub').textContent = msg[1];
     banner.classList.add('show');
   } else {
     banner.classList.remove('show');
