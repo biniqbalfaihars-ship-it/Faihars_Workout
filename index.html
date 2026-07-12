@@ -62,6 +62,13 @@
   h1{font-size:32px;font-weight:700;margin-top:8px;letter-spacing:0.01em;
      background:linear-gradient(90deg,#fff,#d8dae0);-webkit-background-clip:text;background-clip:text;color:transparent;}
   .subhead{color:var(--text-dim);font-size:13px;margin-top:6px;text-transform:none;letter-spacing:0;}
+  .quote-strip{
+    margin-top:14px;padding:12px 14px;border-radius:10px;
+    background:var(--surface);border:1px solid var(--border);
+    border-left:3px solid var(--c-sat);
+    font-size:13px;color:var(--text-dim);font-style:italic;line-height:1.5;
+  }
+  .quote-strip b{color:var(--text);font-style:normal;font-weight:600;}
   .week-hero{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:8px;}
   .week-hero-num{
     font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0.06em;
@@ -227,6 +234,7 @@
     <h1 class="display">Training Log</h1>
   </div>
   <div class="subhead">Pick today's session. Tap into an exercise, log your sets, mark it done.</div>
+  <div class="quote-strip" id="quoteStrip"></div>
   <div class="week-tag">This week resets <b id="weekResetLabel">Saturday</b></div>
   <div class="week-strip" id="weekStrip"></div>
 </header>
@@ -292,48 +300,17 @@ const PROGRAM = [
   {
     id:'sat', day:'Saturday', title:'Legs + Abs', type:'lift', accent:'--c-sat',
     groups:[
-      {label:null, items:[
+      {label:'Quads', items:[
         {name:'Barbell Squat', sets:4, reps:'6–8'},
-        {name:'Romanian Deadlift', sets:3, reps:'8–10'},
         {name:'Leg Press', sets:3, reps:'10–12'},
         {name:'Leg Extension', sets:3, reps:'12–15'},
+      ]},
+      {label:'Hamstrings', items:[
+        {name:'Romanian Deadlift', sets:3, reps:'8–10'},
         {name:'Lying Leg Curl', sets:3, reps:'12–15'},
+      ]},
+      {label:'Calves', items:[
         {name:'Standing Calf Raise', sets:4, reps:'12–15'},
-      ]},
-      {label:'Abs', items:[
-        {name:'Decline Sit-Up', sets:3, reps:'12–15'},
-        {name:'Plank', sets:3, reps:'45–60s'},
-      ]}
-    ]
-  },
-  {
-    id:'sun', day:'Sunday', title:'Chest + Triceps', type:'lift', accent:'--c-sun',
-    groups:[
-      {label:'Chest', items:[
-        {name:'Incline Barbell Bench Press', sets:4, reps:'6–8'},
-        {name:'Flat Dumbbell Bench Press', sets:3, reps:'8–10'},
-        {name:'Incline Dumbbell Fly', sets:3, reps:'10–12'},
-        {name:'Cable Fly', sets:2, reps:'12–15'},
-      ]},
-      {label:'Triceps', items:[
-        {name:'Rope Pushdown', sets:3, reps:'10–12'},
-        {name:'Overhead Cable Triceps Extension', sets:3, reps:'10–12'},
-      ]}
-    ]
-  },
-  {
-    id:'mon', day:'Monday', title:'Back + Biceps + Abs', type:'lift', accent:'--c-mon',
-    groups:[
-      {label:'Back', items:[
-        {name:'Pull-Up (or Lat Pulldown)', sets:4, reps:'8–10'},
-        {name:'Chest Supported Row', sets:3, reps:'8–10'},
-        {name:'Seated Cable Row', sets:3, reps:'10–12'},
-        {name:'Straight Arm Pulldown', sets:2, reps:'12–15'},
-      ]},
-      {label:'Biceps', items:[
-        {name:'EZ Bar Curl', sets:3, reps:'8–10'},
-        {name:'Incline Dumbbell Curl', sets:3, reps:'10–12'},
-        {name:'Hammer Curl', sets:2, reps:'10–12'},
       ]},
       {label:'Abs', items:[
         {name:'Hanging Leg Raise', sets:3, reps:'12–15'},
@@ -342,50 +319,102 @@ const PROGRAM = [
     ]
   },
   {
-    id:'tue', day:'Tuesday', title:'Rest', type:'rest', accent:'--c-tue',
-    restItems:[
-      'Light walking (20–30 minutes)',
-      'Stretching or mobility (optional)',
-      'Sleep 7.5–9 hours',
-      'Stay hydrated',
-      'Eat in a calorie surplus',
-    ]
-  },
-  {
-    id:'wed', day:'Wednesday', title:'Shoulders + Upper Chest', type:'lift', accent:'--c-wed',
+    id:'sun', day:'Sunday', title:'Chest + Shoulders + Triceps + Abs', type:'lift', accent:'--c-sun',
     groups:[
-      {label:'Shoulders', items:[
-        {name:'Seated Dumbbell Shoulder Press', sets:3, reps:'8–10'},
-        {name:'Dumbbell Lateral Raise', sets:3, reps:'12–15'},
-        {name:'Cable Lateral Raise', sets:3, reps:'12–15'},
-        {name:'Rear Delt Fly', sets:3, reps:'12–15'},
-        {name:'Face Pull', sets:2, reps:'12–15'},
-      ]},
       {label:'Upper Chest', items:[
-        {name:'Incline Smith Machine Press', sets:3, reps:'8–10'},
-        {name:'Low-to-High Cable Fly', sets:3, reps:'12–15'},
+        {name:'Incline Barbell Bench Press', sets:4, reps:'6–8'},
+        {name:'Incline Dumbbell Press', sets:3, reps:'8–10'},
+      ]},
+      {label:'Mid Chest', items:[
+        {name:'Flat Dumbbell Bench Press', sets:3, reps:'8–10'},
+      ]},
+      {label:'Lower Chest', items:[
+        {name:'Decline Cable Fly', sets:3, reps:'12–15'},
+      ]},
+      {label:'Shoulders', items:[
+        {name:'Dumbbell Lateral Raise', sets:3, reps:'12–15'},
+        {name:'Rear Delt Fly', sets:3, reps:'12–15'},
+      ]},
+      {label:'Triceps', items:[
+        {name:'Rope Pushdown', sets:3, reps:'10–12'},
+        {name:'Overhead Rope Extension', sets:3, reps:'10–12'},
       ]}
     ]
   },
   {
-    id:'thu', day:'Thursday', title:'Back + Biceps + Forearms + Traps', type:'lift', accent:'--c-thu',
+    id:'mon', day:'Monday', title:'Back + Biceps + Forearms', type:'lift', accent:'--c-mon',
     groups:[
       {label:'Back', items:[
-        {name:'Deadlift', sets:3, reps:'5–6'},
-        {name:'T-Bar Row', sets:3, reps:'8–10'},
-        {name:'Wide Grip Lat Pulldown', sets:3, reps:'8–10'},
-        {name:'One Arm Dumbbell Row', sets:3, reps:'10–12'},
+        {name:'Pull-Up (or Lat Pulldown)', sets:4, reps:'8–10'},
+        {name:'Chest Supported Row', sets:3, reps:'8–10'},
+        {name:'Seated Cable Row', sets:3, reps:'10–12'},
+        {name:'Straight Arm Pulldown', sets:3, reps:'12–15'},
+        {name:'Barbell Shrug (Traps)', sets:2, reps:'10–15'},
       ]},
       {label:'Biceps', items:[
-        {name:'Preacher Curl', sets:3, reps:'8–10'},
-        {name:'Hammer Curl', sets:3, reps:'10–12'},
+        {name:'EZ Bar Curl', sets:3, reps:'8–10'},
+        {name:'Incline Dumbbell Curl', sets:3, reps:'10–12'},
       ]},
       {label:'Forearms', items:[
         {name:'Wrist Curl', sets:3, reps:'12–15'},
         {name:'Reverse Wrist Curl', sets:3, reps:'12–15'},
+      ]}
+    ]
+  },
+  {
+    id:'tue', day:'Tuesday', title:'Rest', type:'rest', accent:'--c-tue',
+    restItems:[
+      'Light walking (20–30 minutes)',
+      'Stretching & mobility',
+      'Stay hydrated',
+      'Sleep 7.5–9 hours',
+      'Maintain calorie surplus',
+    ]
+  },
+  {
+    id:'wed', day:'Wednesday', title:'Shoulders + Chest + Triceps + Abs', type:'lift', accent:'--c-wed',
+    groups:[
+      {label:'Shoulders', items:[
+        {name:'Seated Dumbbell Shoulder Press', sets:3, reps:'8–10'},
+        {name:'Cable Lateral Raise', sets:3, reps:'12–15'},
+        {name:'Face Pull', sets:3, reps:'12–15'},
       ]},
-      {label:'Traps', items:[
-        {name:'Barbell Shrug', sets:4, reps:'10–15'},
+      {label:'Upper Chest', items:[
+        {name:'Incline Smith Machine Press', sets:3, reps:'8–10'},
+      ]},
+      {label:'Mid Chest', items:[
+        {name:'Machine Chest Press', sets:3, reps:'10–12'},
+      ]},
+      {label:'Lower Chest', items:[
+        {name:'Low Cable Crossover (High-to-Low)', sets:3, reps:'12–15'},
+      ]},
+      {label:'Triceps', items:[
+        {name:'Single-Arm Cable Pushdown', sets:3, reps:'10–12'},
+        {name:'EZ Bar Skull Crusher', sets:3, reps:'10–12'},
+      ]},
+      {label:'Abs', items:[
+        {name:'Decline Sit-Up', sets:3, reps:'12–15'},
+        {name:'Plank', sets:3, reps:'45–60s'},
+      ]}
+    ]
+  },
+  {
+    id:'thu', day:'Thursday', title:'Back + Biceps + Forearms', type:'lift', accent:'--c-thu',
+    groups:[
+      {label:'Back', items:[
+        {name:'Deadlift', sets:3, reps:'5–6'},
+        {name:'T-Bar Row', sets:3, reps:'8–10'},
+        {name:'Wide Grip Lat Pulldown', sets:3, reps:'10–12'},
+        {name:'One-Arm Dumbbell Row', sets:3, reps:'10–12'},
+        {name:'Dumbbell Shrug (Traps)', sets:2, reps:'12–15'},
+      ]},
+      {label:'Biceps', items:[
+        {name:'Preacher Curl', sets:3, reps:'8–10'},
+        {name:'Cable Curl', sets:3, reps:'10–12'},
+      ]},
+      {label:'Forearms', items:[
+        {name:'Reverse EZ Bar Curl', sets:3, reps:'10–12'},
+        {name:'Behind-the-Back Wrist Curl', sets:3, reps:'12–15'},
       ]}
     ]
   },
@@ -405,6 +434,19 @@ const WEEK_CELEBRATIONS = [
   ['🏆 6 for 6, Faihars!', 'Whole split done. Onwards to next week.'],
   ['🔥 Week in the bank, Faihars!', 'Every session and every rest day logged.'],
   ['💥 Animal week, Faihars!', 'You didn\'t miss a single day.'],
+];
+
+const MOTIVATION_QUOTES = [
+  'Discipline is choosing between what you want now and what you want most.',
+  'Every set you finish is a promise kept to yourself.',
+  'The body achieves what the mind believes.',
+  'Small progress is still progress. Show up today.',
+  'You don\'t have to be extreme, just consistent.',
+  'Nobody who ever gave their best regretted it.',
+  'The pain of discipline weighs ounces, the pain of regret weighs tons.',
+  'Consistency beats intensity, week after week.',
+  'One more rep than yesterday — that\'s the whole game.',
+  'Faihars, the version of you that you\'re building starts today.',
 ];
 
 PROGRAM.forEach(day=>{
@@ -450,9 +492,11 @@ function serializeState(){
 
 function applySavedState(saved){
   PROGRAM.forEach(d=>{
-    if(saved.days && saved.days[d.id]){
-      d.state = saved.days[d.id].map(s=> ({...s, open:false}));
+    const savedDay = saved.days && saved.days[d.id];
+    if(savedDay && savedDay.length === d.state.length){
+      d.state = savedDay.map(s=> ({...s, open:false}));
     }
+    // if the exercise count changed (routine was updated), keep the fresh state for this day
   });
 }
 
@@ -484,7 +528,15 @@ async function initState(){
   }
 
   document.getElementById('loading').style.display='none';
+  renderQuote();
   renderHome();
+}
+
+function renderQuote(){
+  const today = new Date();
+  const dayIndex = Math.floor(today.getTime()/86400000); // changes once per calendar day
+  const quote = MOTIVATION_QUOTES[dayIndex % MOTIVATION_QUOTES.length];
+  document.getElementById('quoteStrip').innerHTML = `<b>Today's reminder:</b> ${quote}`;
 }
 
 async function manualReset(){
