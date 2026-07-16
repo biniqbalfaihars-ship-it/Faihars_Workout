@@ -159,9 +159,11 @@
 
   /* ===== DAY DETAIL ===== */
   #view-day{display:none;}
-  .back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text-dim);font-size:13px;font-weight:600;
-    background:none;border:none;cursor:pointer;padding:8px 0;margin-bottom:6px;font-family:'Manrope',sans-serif;}
-  .back-btn:hover{color:var(--accent-active);}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;font-weight:700;
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;
+    cursor:pointer;padding:9px 16px;margin-bottom:14px;font-family:'Manrope',sans-serif;
+    transition:all .15s ease;}
+  .back-btn:hover{color:#0c0e13;background:var(--accent-active);border-color:var(--accent-active);}
 
   .day-header{display:flex;justify-content:space-between;align-items:flex-end;margin:6px 0 20px;}
   .day-header h2{font-family:'Oswald',sans-serif;font-size:26px;text-transform:uppercase;font-weight:600;}
@@ -346,17 +348,18 @@ const PROGRAM = [
     ]
   },
   {
-    id:'sun', day:'Sunday', title:'Chest + Shoulders + Triceps + Abs', type:'lift', accent:'--c-sun',
+    id:'sun', day:'Sunday', title:'Chest + Shoulders + Triceps', type:'lift', accent:'--c-sun',
     groups:[
       {label:'Upper Chest', items:[
         {name:'Incline Barbell Bench Press', sets:4, reps:'6–8'},
         {name:'Incline Dumbbell Press', sets:3, reps:'8–10'},
       ]},
       {label:'Mid Chest', items:[
-        {name:'Flat Dumbbell Bench Press', sets:3, reps:'8–10'},
+        {name:'Flat Barbell Bench Press', sets:2, reps:'8–10'},
       ]},
       {label:'Lower Chest', items:[
-        {name:'Decline Cable Fly', sets:3, reps:'12–15'},
+        {name:'Decline Chest Press (Machine or Barbell)', sets:3, reps:'10–12'},
+        {name:'High-to-Low Cable Fly', sets:2, reps:'12–15'},
       ]},
       {label:'Shoulders', items:[
         {name:'Dumbbell Lateral Raise', sets:3, reps:'12–15'},
@@ -399,29 +402,26 @@ const PROGRAM = [
     ]
   },
   {
-    id:'wed', day:'Wednesday', title:'Shoulders + Chest + Triceps + Abs', type:'lift', accent:'--c-wed',
+    id:'wed', day:'Wednesday', title:'Chest + Shoulders + Triceps', type:'lift', accent:'--c-wed',
     groups:[
-      {label:'Shoulders', items:[
-        {name:'Seated Dumbbell Shoulder Press', sets:3, reps:'8–10'},
-        {name:'Cable Lateral Raise', sets:3, reps:'12–15'},
-        {name:'Face Pull', sets:3, reps:'12–15'},
+      {label:'Mid Chest', items:[
+        {name:'Flat Barbell Bench Press', sets:3, reps:'6–8'},
+        {name:'Machine Chest Press', sets:3, reps:'8–10'},
       ]},
       {label:'Upper Chest', items:[
-        {name:'Incline Smith Machine Press', sets:3, reps:'8–10'},
-      ]},
-      {label:'Mid Chest', items:[
-        {name:'Machine Chest Press', sets:3, reps:'10–12'},
+        {name:'Incline Smith Machine Press', sets:1, reps:'10–12'},
       ]},
       {label:'Lower Chest', items:[
-        {name:'Low Cable Crossover (High-to-Low)', sets:3, reps:'12–15'},
+        {name:'High-to-Low Cable Fly', sets:1, reps:'12–15'},
+      ]},
+      {label:'Shoulders', items:[
+        {name:'Seated Dumbbell Shoulder Press', sets:3, reps:'8–10'},
+        {name:'Dumbbell Lateral Raise', sets:3, reps:'12–15'},
+        {name:'Rear Delt Fly', sets:3, reps:'12–15'},
       ]},
       {label:'Triceps', items:[
-        {name:'Single-Arm Cable Pushdown', sets:3, reps:'10–12'},
-        {name:'EZ Bar Skull Crusher', sets:3, reps:'10–12'},
-      ]},
-      {label:'Abs', items:[
-        {name:'Decline Sit-Up', sets:3, reps:'12–15'},
-        {name:'Plank', sets:3, reps:'45–60s'},
+        {name:'Rope Pushdown', sets:3, reps:'10–12'},
+        {name:'Overhead Cable Triceps Extension', sets:3, reps:'10–12'},
       ]}
     ]
   },
@@ -489,6 +489,16 @@ PROGRAM.forEach(day=>{
     day.state = day.restItems.map(()=>({done:false}));
   }
 });
+
+const ACCENT_HEX = {
+  '--c-sat':'#ff6a3d',
+  '--c-sun':'#fb4d72',
+  '--c-mon':'#4c8dff',
+  '--c-tue':'#2dd4bf',
+  '--c-wed':'#a879f7',
+  '--c-thu':'#f7b733',
+};
+function hexFor(day){ return ACCENT_HEX[day.accent] || '#ff6a3d'; }
 
 let currentDayId = null;
 let bannerShownFor = {};      // dayId -> celebration, per-day completion message
@@ -644,7 +654,7 @@ function renderWeekStrip(){
     const seg = document.createElement('div');
     seg.className='seg';
     seg.title = day.day;
-    seg.innerHTML = `<i style="width:${pct}%; background:var(${day.accent})"></i>`;
+    seg.innerHTML = `<i style="width:${pct}%; background:${hexFor(day)}"></i>`;
     el.appendChild(seg);
   });
 }
@@ -694,7 +704,7 @@ function renderHome(){
 
     const card = document.createElement('div');
     card.className = 'day-card'+(progress===1&&total>0?' done':'');
-    card.style.setProperty('--accent', `var(${day.accent})`);
+    card.style.setProperty('--accent', hexFor(day));
     card.onclick = ()=> openDay(day.id);
     card.innerHTML = `
       <div class="ring">
@@ -737,7 +747,7 @@ function toggleInfo(){ document.getElementById('infoPanel').classList.toggle('sh
 /* ================= RENDER: DAY DETAIL ================= */
 function renderDay(){
   const day = PROGRAM.find(d=>d.id===currentDayId);
-  const accentVar = `var(${day.accent})`;
+  const accentVar = hexFor(day);
   document.getElementById('view-day').style.setProperty('--accent-active', accentVar);
   document.getElementById('dhSub').textContent = day.day.toUpperCase();
   document.getElementById('dhSub').style.color = accentVar;
@@ -883,7 +893,7 @@ function resetEx(evt, idx){
 
 /* ================= RENDER: REST DAY ================= */
 function renderRestDay(day){
-  const accentVar = `var(${day.accent})`;
+  const accentVar = hexFor(day);
   const total = day.state.length;
   const done = day.state.filter(s=>s.done).length;
   document.getElementById('dhProgress').textContent = `${done} / ${total} done`;
